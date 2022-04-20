@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "..\\AI"
+		},
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"python.linting.pylintPath": "E:\\Python\\Lib\\site-packages\\PIL"
+	}
+}
