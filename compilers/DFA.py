@@ -26,13 +26,22 @@ class Dfa :
     def state1(self,c):
         print("state 1")
         x = re.findall(r"[\w]+", c)
-        if (len(x)>0):
+        y=re.findall(r'([0-9][A-Za-z]+[0-9]*)',c)
+
+        if (len(y) > 0):
+           if (c == y[0]):
+              dfa = -1
+        elif(c=='!'):
+            dfa=10
+        elif (len(x)>0):
             if (c == ' '):
                 dfa = 1
             elif (c == x[0]):
                 dfa = 2
+
             else:
                 dfa = -1
+
         else:
             dfa = -1
 
@@ -45,7 +54,9 @@ class Dfa :
         print("state 2")
         if (c == ' '):
             dfa = 2
-        elif (c == '='or c=='<'or c=='>'or c== '=>'or c=='<='):
+        elif (c == ')'):
+            dfa = 5
+        elif (c == '='or c=='<'or c=='>'or c== '=>'or c=='<='or c=='&&'or c == '||'):
             dfa = 3
         else:
             dfa = -1
@@ -57,7 +68,14 @@ class Dfa :
     def state3(self,c):
         print("state 3")
         x = re.findall(r"[\w]+", c)
-        if len(x)>0:
+        y = re.findall(r'([0-9][A-Za-z]+[0-9]*)', c)
+
+        if (len(y) > 0):
+            if (c == y[0]):
+                dfa = -1
+        elif (c == '!'):
+            dfa = 11
+        elif len(x)>0:
             if (c == ' '):
                 dfa = 3
             elif (c == x[0]):
@@ -77,9 +95,9 @@ class Dfa :
         #print(c)
         if (c== ' '):
             dfa = 4
-        elif (c == '='or c == '<'or c == '>'or c == '=>'or c == '<=')  :
+        elif (c == '='or c == '<'or c == '>'or c == '=>'or c == '<='or c=='&&'or c=='||')  :
             dfa = 3
-        elif (c=='&&'or c=='||'or c == '!') :
+        elif (c == '!') :
             dfa = 1
         elif (c ==')')  :
             print("acceptance state")
@@ -144,9 +162,17 @@ class Dfa :
 
         types = []
         for i in range(len(routes)):
+            error = re.findall (r'([0-9][A-Za-z]+[0-9]*)',routes[i])
+            if (len(error) > 0):
+                if (routes[i] == error[0]):
+                    types.append("Illegal Type")
+
             y = re.findall(r'[A-Za-z][\w]*', routes[i])
             num = re.findall(r"[\d]+", routes[i])
-            if (len(num) > 0):
+            if (len(y) > 0):
+                if (routes[i] == y[0]):
+                    types.append("ID")
+            elif (len(num) > 0):
                 if (routes[i] == num[0]):
                     types.append("NUM")
             elif (routes[i] == '=' or routes[i] == '<=' or routes[i] == '=>' or routes[i] == '<' or routes[i] == '>' or
@@ -154,9 +180,7 @@ class Dfa :
                 types.append("Operators")
             elif (routes[i] == '&&' or routes[i] == '||' or routes[i] == '!'):
                 types.append("Reserved words")
-            elif (len(y) > 0):
-                if (routes[i] == y[0]):
-                    types.append("ID")
+
         print(types)
         print(routes)
 
@@ -181,25 +205,41 @@ class Dfa :
                     Token.append(("'"+str(routes[i])+"',", "'"+str(types[i])+"',","2nd State"))
                 elif (dfa == -1):
                     Token.append(("'"+str(routes[i])+"',", "'"+str(types[i])+"',", "error state"))
+            elif(dfa==10):
+                dfa=self.state1(routes[i])
+                if (dfa == 2):
+                    Token.append(("'" + str(routes[i]) + "',", "'" + str(types[i]) + "',", "4th State"))
 
             elif (dfa == 1):
                 dfa = self.state1(routes[i])
                 if(dfa==2):
+                    Token.append(("'"+str(routes[i])+"',", "'"+str(types[i])+"',","4th State"))
+                if(dfa==10):
                     Token.append(("'"+str(routes[i])+"',", "'"+str(types[i])+"',","3rd State"))
                 elif (dfa == -1):
                     Token.append(("'"+str(routes[i])+"',", "'"+str(types[i])+"',", "error state"))
 
             elif (dfa == 2):
                 dfa = self.state2(routes[i])
-                if(dfa==3):
-                    Token.append(("'"+str(routes[i])+"',", "'"+str(types[i])+"',", "4th State"))
+                if (dfa==5):
+                    Token.append(("'" + str(routes[i]) + "',", "'" + str(types[i]) + "',", "acceptance state"))
+                elif(dfa==3):
+                    Token.append(("'"+str(routes[i])+"',", "'"+str(types[i])+"',", "5th State"))
                 elif (dfa == -1):
                     Token.append(("'"+str(routes[i])+"',","'"+ str(types[i])+"',", "error state"))
+
+
+            elif (dfa == 11):
+                dfa = self.state3(routes[i])
+                if (dfa == 4):
+                    Token.append(("'" + str(routes[i]) + "',", "'" + str(types[i]) + "',", "7th State"))
 
             elif (dfa == 3):
                 dfa = self.state3(routes[i])
                 if(dfa==4):
-                    Token.append(("'"+str(routes[i])+"',","'"+ str(types[i])+"',", "5th State"))
+                    Token.append(("'"+str(routes[i])+"',","'"+ str(types[i])+"',", "7th State"))
+                elif(dfa==11):
+                    Token.append(("'" + str(routes[i]) + "',", "'" + str(types[i]) + "',", "6th State"))
                 elif (dfa == -1):
                     Token.append(("'"+str(routes[i])+"',", "'"+str(types[i])+"',", "error state"))
 
@@ -210,7 +250,7 @@ class Dfa :
                 elif(dfa==1):
                     Token.append(("'"+str(routes[i])+"',", "'"+str(types[i])+"',", "2nd State"))
                 elif (dfa == 3):
-                    Token.append(("'"+str(routes[i])+"',","'"+ str(types[i])+"',", "4th State"))
+                    Token.append(("'"+str(routes[i])+"',","'"+ str(types[i])+"',", "5th State"))
                 elif (dfa == -1):
                     Token.append(("'"+str(routes[i])+"',", str(types[i])+"',", "error state"))
             elif (dfa == 5):
@@ -230,19 +270,15 @@ class Dfa :
         return Token
 ######################################################################################################################################
 # Driver code
-"""
+
 if __name__ == "__main__":
     String = input("enter the desired logical expression")
     x = re.findall(r"([(]|[)]|<=|=>|&&|[|]{2}|[<>=!]|[\w]+)", String)
     print(x)
+
     routes = []
+    dfa = Dfa()
     for i in range(len(x)):
         routes.append(x[i])
-    Token=Tokens(routes)
+    Token=dfa.Tokens(routes)
     print(Token)
-    if (isAccepted(routes)):
-        print("ACCEPTED")
-    else:
-        print("NOT ACCEPTED")
-"""
-
